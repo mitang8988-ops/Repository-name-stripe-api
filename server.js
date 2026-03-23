@@ -7,9 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 临时测试：私有仓库下短期使用
-const secretKey = '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';
-const stripe = new Stripe(secretKey);
+const secretKey = process.env.STRIPE_SECRET_KEY || '';
+const stripe = secretKey ? new Stripe(secretKey) : null;
 
 const PRODUCT_NAME = 'Digital Membership';
 const SUCCESS_URL = 'https://awesome-tv.online/payment-success';
@@ -36,20 +35,20 @@ app.get('/env-check', (req, res) => {
 });
 
 function getPrice(plan, device) {
-  if (!PRICING[plan] || !PRICING[plan][device]) {
-    return null;
-  }
+  if (!PRICING[plan] || !PRICING[plan][device]) return null;
   return PRICING[plan][device];
 }
 
 app.post('/create-checkout-session', async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
     const { plan, device } = req.body;
 
     if (!plan || !device) {
-      return res.status(400).json({
-        error: 'Missing plan/device'
-      });
+      return res.status(400).json({ error: 'Missing plan/device' });
     }
 
     const normalizedPlan = String(plan).replace('m', '').trim();
@@ -58,9 +57,7 @@ app.post('/create-checkout-session', async (req, res) => {
     const amount = getPrice(normalizedPlan, normalizedDevice);
 
     if (!amount) {
-      return res.status(400).json({
-        error: 'Invalid plan/device'
-      });
+      return res.status(400).json({ error: 'Invalid plan/device' });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -82,19 +79,14 @@ app.post('/create-checkout-session', async (req, res) => {
       cancel_url: CANCEL_URL
     });
 
-    return res.json({
-      success: true,
-      url: session.url
-    });
+    res.json({ success: true, url: session.url });
   } catch (err) {
     console.error('Stripe error:', err);
-    return res.status(500).json({
-      error: err.message || 'Unknown server error'
-    });
+    res.status(500).json({ error: err.message || 'Unknown server error' });
   }
 });
 
-const PORT = process.env.PORT || 4242;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
