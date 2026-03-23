@@ -10,7 +10,7 @@ app.use(express.json());
 const secretKey = process.env.STRIPE_SECRET_KEY || '';
 const stripe = secretKey ? new Stripe(secretKey) : null;
 
-const PRODUCT_NAME = 'Digital Membership';
+const PRODUCT_NAME = 'Pet Supplies';
 const SUCCESS_URL = 'https://awesome-tv.online/payment-success';
 const CANCEL_URL = 'https://awesome-tv.online/payment-cancelled';
 
