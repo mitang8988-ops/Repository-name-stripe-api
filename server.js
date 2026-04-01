@@ -23,7 +23,7 @@ const PRICING = {
  * 你的收款钱包地址（必须改）
  * PayLex 文档要求你提供自己的钱包地址
  */
-const YOUR_WALLET_ADDRESS = '0xfba66cbaced7401c1c9513ceb13c51de417ea5b7';
+const YOUR_WALLET_ADDRESS = '0xc58b6e0f933bfd6353ae1d123731de65991c0579';
 
 /**
  * 你的 API 对外地址（必须改）
